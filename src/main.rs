@@ -3,7 +3,7 @@ mod shared;
 use shared::play;
 
 fn main() {
-  println!("Start");
-  let step = play(vec![], vec![], true);
-  println!("Next step: {}", step);
+    println!("Start");
+    let step = play(vec![], vec![], true);
+    println!("Next step: {}", step);
 }

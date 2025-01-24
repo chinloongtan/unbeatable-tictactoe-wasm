@@ -94,7 +94,9 @@ impl Board {
     }
 
     fn current_player(&self) -> Player {
-        if (self.step_count() % 2 == 0 && self.first_hand.unwrap_or(false)) || (self.step_count() % 2 != 0 && !self.first_hand.unwrap_or(false)) {
+        if (self.step_count() % 2 == 0 && self.first_hand.unwrap_or(false))
+            || (self.step_count() % 2 != 0 && !self.first_hand.unwrap_or(false))
+        {
             Player::PerfectPlayer
         } else {
             Player::Opponent
@@ -113,10 +115,7 @@ impl Board {
 
     fn minimax(&self, depth: u8) -> Node {
         if self.draw() {
-            return Node {
-                step: -1,
-                score: 0,
-            };
+            return Node { step: -1, score: 0 };
         }
 
         let mut nodes = vec![];
@@ -173,4 +172,245 @@ pub fn play(perfect_player: Vec<u32>, opponent: Vec<u32>, first_hand: bool) -> i
     let step = board.next_step(count);
 
     step as i32
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn board_step_count() {
+        let board = Board {
+            perfect_player: vec![],
+            opponent: vec![],
+            first_hand: Some(true),
+        };
+        assert_eq!(board.step_count(), 0);
+
+        let board2 = Board {
+            perfect_player: vec![],
+            opponent: vec![1],
+            first_hand: None,
+        };
+        assert_eq!(board2.step_count(), 1);
+    }
+
+    #[test]
+    fn board_has_winner() {
+        let board1 = Board {
+            perfect_player: vec![1, 2, 3],
+            opponent: vec![],
+            first_hand: None,
+        };
+        assert_eq!(board1.won(), true);
+
+        let board2 = Board {
+            perfect_player: vec![4, 5, 6],
+            opponent: vec![],
+            first_hand: None,
+        };
+        assert_eq!(board2.won(), true);
+
+        let board3 = Board {
+            perfect_player: vec![7, 8, 9],
+            opponent: vec![],
+            first_hand: None,
+        };
+        assert_eq!(board3.won(), true);
+
+        let board4 = Board {
+            perfect_player: vec![1, 4, 7],
+            opponent: vec![],
+            first_hand: None,
+        };
+        assert_eq!(board4.won(), true);
+
+        let board5 = Board {
+            perfect_player: vec![2, 5, 8],
+            opponent: vec![],
+            first_hand: None,
+        };
+        assert_eq!(board5.won(), true);
+
+        let board6 = Board {
+            perfect_player: vec![3, 6, 9],
+            opponent: vec![],
+            first_hand: None,
+        };
+        assert_eq!(board6.won(), true);
+
+        let board7 = Board {
+            perfect_player: vec![1, 5, 9],
+            opponent: vec![],
+            first_hand: None,
+        };
+        assert_eq!(board7.won(), true);
+
+        let board8 = Board {
+            perfect_player: vec![3, 5, 7],
+            opponent: vec![],
+            first_hand: None,
+        };
+        assert_eq!(board8.won(), true);
+    }
+
+    #[test]
+    fn board_has_loser() {
+        let board1 = Board {
+            perfect_player: vec![],
+            opponent: vec![1, 2, 3],
+            first_hand: None,
+        };
+        assert_eq!(board1.won(), false);
+
+        let board2 = Board {
+            perfect_player: vec![],
+            opponent: vec![4, 5, 6],
+            first_hand: None,
+        };
+        assert_eq!(board2.won(), false);
+
+        let board3 = Board {
+            perfect_player: vec![],
+            opponent: vec![7, 8, 9],
+            first_hand: None,
+        };
+        assert_eq!(board3.won(), false);
+
+        let board4 = Board {
+            perfect_player: vec![],
+            opponent: vec![1, 4, 7],
+            first_hand: None,
+        };
+        assert_eq!(board4.won(), false);
+
+        let board5 = Board {
+            perfect_player: vec![],
+            opponent: vec![2, 5, 8],
+            first_hand: None,
+        };
+        assert_eq!(board5.won(), false);
+
+        let board6 = Board {
+            perfect_player: vec![],
+            opponent: vec![3, 6, 9],
+            first_hand: None,
+        };
+        assert_eq!(board6.won(), false);
+
+        let board7 = Board {
+            perfect_player: vec![],
+            opponent: vec![1, 5, 9],
+            first_hand: None,
+        };
+        assert_eq!(board7.won(), false);
+
+        let board8 = Board {
+            perfect_player: vec![],
+            opponent: vec![3, 5, 7],
+            first_hand: None,
+        };
+        assert_eq!(board8.won(), false);
+    }
+
+    #[test]
+    fn board_is_draw() {
+        let board1 = Board {
+            perfect_player: vec![2, 5, 6, 7],
+            opponent: vec![1, 3, 4, 8, 9],
+            first_hand: None,
+        };
+        assert_eq!(board1.draw(), true);
+
+        let board2 = Board {
+            perfect_player: vec![],
+            opponent: vec![],
+            first_hand: Some(true),
+        };
+        assert_eq!(board2.draw(), false);
+    }
+
+    #[test]
+    fn board_occuiped_steps() {
+        let board = Board {
+            perfect_player: vec![1, 2, 3],
+            opponent: vec![4, 5, 6],
+            first_hand: None,
+        };
+        assert_eq!(
+            Board::occupied_steps(&board.opponent, &board.perfect_player),
+            vec![4, 5, 6, 1, 2, 3]
+        );
+    }
+
+    #[test]
+    fn board_available_steps() {
+        let board = Board {
+            perfect_player: vec![1, 2, 3],
+            opponent: vec![4, 5, 6],
+            first_hand: None,
+        };
+        assert_eq!(board.available_steps(), vec![7, 8, 9]);
+    }
+
+    #[test]
+    fn board_current_player() {
+        let board = Board {
+            perfect_player: vec![1, 2, 3],
+            opponent: vec![4, 5, 6],
+            first_hand: Some(true),
+        };
+        assert_eq!(board.current_player(), Player::PerfectPlayer);
+
+        let board2 = Board {
+            perfect_player: vec![],
+            opponent: vec![],
+            first_hand: None,
+        };
+        assert_eq!(board2.current_player(), Player::Opponent);
+
+        let board3 = Board {
+            perfect_player: vec![1, 2, 3],
+            opponent: vec![4, 5, 6],
+            first_hand: Some(false),
+        };
+        assert_eq!(board3.current_player(), Player::Opponent);
+
+        let board4 = Board {
+            perfect_player: vec![],
+            opponent: vec![],
+            first_hand: Some(true),
+        };
+        assert_eq!(board4.current_player(), Player::PerfectPlayer);
+    }
+
+    #[test]
+    fn board_try_next_step() {
+        let board = Board {
+            perfect_player: vec![1, 2, 3],
+            opponent: vec![4, 5, 6],
+            first_hand: Some(true),
+        };
+        let new_board = board.try_next_step(7);
+        assert_eq!(new_board.perfect_player, vec![1, 2, 3, 7]);
+    }
+
+    #[test]
+    fn board_minimax() {
+        let first_move = Board {
+            perfect_player: vec![],
+            opponent: vec![],
+            first_hand: Some(true),
+        };
+        let node = first_move.minimax(0);
+        assert_eq!([1, 3, 5, 7, 9].contains(&node.step), true);
+
+        let draw = Board {
+            perfect_player: vec![2, 5, 6, 7],
+            opponent: vec![1, 3, 4, 8, 9],
+            first_hand: None,
+        };
+        let node = draw.minimax(0);
+        assert_eq!(node.step, -1);
+    }
 }
